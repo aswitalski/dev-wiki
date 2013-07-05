@@ -34,13 +34,13 @@ public class LocksAndConditions {
 		private LinkedList<Number> elements = new LinkedList<>();
 		
 		/** Reentrant lock. */
-		final Lock lock = new ReentrantLock();
+		private final Lock lock = new ReentrantLock();
 		
 		/** "Not full" condition. */
-		final Condition notFull = lock.newCondition();
+		private final Condition notFull = lock.newCondition();
 		
 		/** "Not empty" condition. */
-		final Condition notEmpty = lock.newCondition();
+		private final Condition notEmpty = lock.newCondition();
 		
 		/**
 		 * Adds a number to the tail of the queue.
@@ -149,6 +149,12 @@ public class LocksAndConditions {
 		TimeUnit.MINUTES.sleep(10);
 	}
 	
+	/**
+	 * Sleeps for given time.
+	 * 
+	 * @param milliseconds
+	 *            Time in milliseconds
+	 */
 	private static void nap(int milliseconds) {
 		try {
 			TimeUnit.MILLISECONDS.sleep(milliseconds);

@@ -35,6 +35,7 @@ public class LocksAndConditions {
 			lock.lock();
 			pPrint("Locked for put");
 			try {
+				// while loop is needed to support "fake" signals
 				while (elements.size() == QUEUE_MAX_SIZE) {
 					pPrint("Queue full, object not put, awaiting...");
 					notFull.await(); // releases the lock and waits for a signal, then checks the size again
@@ -55,9 +56,10 @@ public class LocksAndConditions {
 			lock.lock();
 			cPrint("Locked for take");
 			try {
+				// while loop is needed to support "fake" signals
 				while (elements.size() == 0) {
 					cPrint("Queue empty, object not taken, awaiting...");
-					notEmpty.await(); // releases the lock and waits for a signal
+					notEmpty.await(); // releases the lock and waits for a signal, then checks if any elements are available
 				}
 				cPrint("Queue not empty, taking element");
 				Number number = elements.removeFirst();

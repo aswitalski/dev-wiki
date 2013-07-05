@@ -6,6 +6,8 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.junit.Test;
+
 /**
  * Demonstrates how {@link java.util.concurrent.locks.Lock Lock} and its {@link java.util.concurrent.locks.Condition Conditions} work. Queue (backed
  * by a linked list) has a capacity of 20 elements, for the first 50 messages it takes twice as much time for consumer to process them than to the
@@ -104,12 +106,13 @@ public class LocksAndConditions {
 	 * @throws Exception
 	 *             If any exception occurs
 	 */
-	public static void main(String... args) throws Exception {
+	@Test
+	public void synchronizeProducerAndConsumer() throws Exception {
 		
 		final Queue queue = new Queue();
 
 		/**
-		 * Producer thread, deliveres a number and puts it onto the queue.
+		 * Producer thread, delivers a number and puts it onto the queue.
 		 */
 		Thread producer = new Thread() {
 			
@@ -142,7 +145,8 @@ public class LocksAndConditions {
 		consumer.start();
 		producer.start();
 
-		TimeUnit.SECONDS.sleep(10);
+		// terminated by consumer thread anyway
+		TimeUnit.MINUTES.sleep(10);
 	}
 	
 	private static void nap(int milliseconds) {

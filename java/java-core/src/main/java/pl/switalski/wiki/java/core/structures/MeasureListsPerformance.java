@@ -13,7 +13,7 @@ import org.junit.Test;
 public class MeasureListsPerformance {
 	
 	@Test
-	public void benchmarkAddOperation() {
+	public void examineAddOperation() {
 		
 		long timeTakenForLinkedList = benchmarkAddFor(new LinkedList<Integer>());
 		long timeTakenForArrayList = benchmarkAddFor(new ArrayList<Integer>());
@@ -35,7 +35,13 @@ public class MeasureListsPerformance {
 		Date after = new Date();
 		return timeTaken(list, before, after);
 	}
-
+	
+	/**
+	 * Adds one million elements to specified list.
+	 * 
+	 * @param list
+	 *            List to be filled
+	 */
 	private void addOneMillionItems(List<Integer> list) {
 		for (int i = 0; i < 1_000_000; i++) {
 			list.add(i);
@@ -43,7 +49,7 @@ public class MeasureListsPerformance {
 	}
 	
 	@Test
-	public void benchmarkRemoveAtTheBeginningOperation() {
+	public void examineRemoveAtTheBeginningOperation() {
 		
 		long timeTakenForLinkedList = benchmarkRemoveAtTheBeginningFor(new LinkedList<Integer>());
 		long timeTakenForArrayList = benchmarkRemoveAtTheBeginningFor(new ArrayList<Integer>());

@@ -7,30 +7,45 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * Demonstrates how locks and their conditions work. Queue (backed by a linked list) has a capacity of 20 elements, for the first 50 messages it takes
- * twice as much time for consumer to process them than to the producer to deliver, therefore the queue gets full and the producer has to wait for the
- * consumer's action to complete (<code>notFull.await()</code>). The other 50 messages take twice as much time for the producer to deliver than for
- * the consumer to process, thus the queue size decreases gradually and before the end of the test consumer catches up and has to wait for the
- * producer to deliver new messages.
+ * Demonstrates how {@link java.util.concurrent.locks.Lock Lock} and its {@link java.util.concurrent.locks.Condition Conditions} work. Queue (backed
+ * by a linked list) has a capacity of 20 elements, for the first 50 messages it takes twice as much time for consumer to process them than to the
+ * producer to deliver, therefore the queue gets full and the producer has to wait for the consumer's action to complete (<code>notFull.await()</code>
+ * ). The other 50 messages take twice as much time for the producer to deliver than for the consumer to process, thus the queue size decreases
+ * gradually and before the end of the test consumer catches up and has to wait for the producer to deliver new messages.
  * 
  * @author sensei
  */
 public class LocksAndConditions {
 	
+	/** Total number of messages to be sent. */
 	private static final int NUMBER_OF_MESSAGES = 100;
 	
+	/** Maximum queue size. */
 	private static final int QUEUE_MAX_SIZE = 20;
 
+	/**
+	 * A simple FIFO blocking queue implementation, similar to {@link java.util.concurrent.LinkedBlockingQueue LinkedBlockingQueue}
+	 */
 	private static class Queue {
 
+		/** LinkedList backing the queue. */
 		private LinkedList<Number> elements = new LinkedList<>();
 		
+		/** Reentrant lock. */
 		final Lock lock = new ReentrantLock();
 		
+		/** "Not full" condition. */
 		final Condition notFull = lock.newCondition();
 		
+		/** "Not empty" condition. */
 		final Condition notEmpty = lock.newCondition();
 		
+		/**
+		 * Adds a number to the tail of the queue.
+		 * 
+		 * @param number
+		 *            Number
+		 */
 		public void put(Number number) {
 			lock.lock();
 			pPrint("Locked for put");
@@ -52,6 +67,11 @@ public class LocksAndConditions {
 			}
 		}
 		
+		/**
+		 * Takes a number from the beginning of the queue. If not available, waits for it to be delivered.
+		 * 
+		 * @return Number taken from the head of the queue
+		 */
 		public Number take() {
 			lock.lock();
 			cPrint("Locked for take");
@@ -75,12 +95,21 @@ public class LocksAndConditions {
 		}
 	}
 	
+	/**
+	 * Creates producer and consumer threads, which use a queue for data synchronization.
+	 * 
+	 * @param args
+	 *            Invocation arguments, not used
+	 * 
+	 * @throws Exception
+	 *             If any exception occurs
+	 */
 	public static void main(String... args) throws Exception {
 		
 		final Queue queue = new Queue();
 
 		/**
-		 * Produces and deliveres
+		 * Producer thread, deliveres a number and puts it onto the queue.
 		 */
 		Thread producer = new Thread() {
 			
@@ -96,7 +125,7 @@ public class LocksAndConditions {
 		};
 		
 		/**
-		 * Consumer thread, receives messages when they are ready.
+		 * Consumer thread, receives a number from the queue.
 		 */
 		Thread consumer = new Thread() {
 			

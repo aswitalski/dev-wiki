@@ -6,11 +6,24 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+/**
+ * Demonstrates how locks and their conditions work. Queue (backed by a linked list) has a capacity of 20 elements, for the first 50 messages it takes
+ * twice as much time for consumer to process them than to the producer to deliver, therefore the queue gets full and the producer has to wait for the
+ * consumer's action to complete (<code>notFull.await()</code>). The other 50 messages take twice as much time for the producer to deliver than for
+ * the consumer to process, thus the queue size decreases gradually and before the end of the test consumer catches up and has to wait for the
+ * producer to deliver new messages.
+ * 
+ * @author sensei
+ */
 public class LocksAndConditions {
 	
+	private static final int NUMBER_OF_MESSAGES = 100;
+	
+	private static final int QUEUE_MAX_SIZE = 20;
+
 	private static class Queue {
-		
-		private LinkedList<Double> elements = new LinkedList<>();
+
+		private LinkedList<Number> elements = new LinkedList<>();
 		
 		final Lock lock = new ReentrantLock();
 		
@@ -18,41 +31,43 @@ public class LocksAndConditions {
 		
 		final Condition notEmpty = lock.newCondition();
 		
-		public void put(Double value) {
+		public void put(Number number) {
 			lock.lock();
-			print("Locked for put");
+			pPrint("Locked for put");
 			try {
-				while (elements.size() == 1000) {
-					print("Queue full, waiting");
+				while (elements.size() == QUEUE_MAX_SIZE) {
+					pPrint("Queue full, object not put, awaiting...");
 					notFull.await(); // releases the lock and waits for a signal, then checks the size again
 				}
-				print("Queue not full, adding element");
-				elements.add(value);
-				print("Signalling not empty, queue size: " + elements.size());
+				pPrint("Queue not full, adding element");
+				elements.add(number);
+				pPrint("Signalling not empty, queue size: " + elements.size());
 				notEmpty.signal(); // signals that condition is met, but does not release the lock
 			} catch (InterruptedException e) {
 				throw new RuntimeException(e);
 			} finally {
+				pPrint("Put releases the lock");
 				lock.unlock();
 			}
 		}
 		
-		public Object take() {
+		public Number take() {
 			lock.lock();
-			print("Locked for take");
+			cPrint("Locked for take");
 			try {
 				while (elements.size() == 0) {
-					print("Queue empty, waiting");
+					cPrint("Queue empty, object not taken, awaiting...");
 					notEmpty.await(); // releases the lock and waits for a signal
 				}
-				print("Queue not empty, taking element");
-				Double value = elements.removeFirst();
-				print("Signalling not full, queue size: " + elements.size());
+				cPrint("Queue not empty, taking element");
+				Number number = elements.removeFirst();
+				cPrint("Signalling not full, queue size: " + elements.size());
 				notFull.signal(); // signals that condition is met, but does not release the lock
-				return value;
+				return number;
 			} catch (InterruptedException e) {
 				throw new RuntimeException(e);
 			} finally {
+				cPrint("Take releases the lock");
 				lock.unlock();
 			}
 		}
@@ -62,25 +77,34 @@ public class LocksAndConditions {
 		
 		final Queue queue = new Queue();
 
+		/**
+		 * Produces and deliveres
+		 */
 		Thread producer = new Thread() {
 			
 			@Override
 			public void run() {
-				for (int i = 0; i < 1000; i++) {
-					nap(i < 500 ? 10 : 20);
-					queue.put(Math.random());
+				for (int i = 0; i < NUMBER_OF_MESSAGES; i++) {
+					nap(i < NUMBER_OF_MESSAGES / 2 ? 10 : 20);
+					int number = i + 1;
+					print("<== Produced: " + number);
+					queue.put(number);
 				}
 			}
 		};
 		
+		/**
+		 * Consumer thread, receives messages when they are ready.
+		 */
 		Thread consumer = new Thread() {
 			
 			@Override
 			public void run() {
-				for (int i = 0; i < 1000; i++) {
-					System.out.println("Got: " + queue.take());
-					nap(i < 500 ? 20 : 10);
+				for (int i = 0; i < NUMBER_OF_MESSAGES; i++) {
+					print("==> Consumed: " + queue.take());
+					nap(i < NUMBER_OF_MESSAGES / 2 ? 20 : 10);
 				}
+				System.exit(0);
 			}
 		};
 		
@@ -100,5 +124,13 @@ public class LocksAndConditions {
 
 	private static void print(String msg) {
 		System.out.println(msg);
+	}
+
+	private static void cPrint(String msg) {
+		System.out.println("- " + msg);
+	}
+	
+	private static void pPrint(String msg) {
+		System.out.println("+ " + msg);
 	}
 }

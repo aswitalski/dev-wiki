@@ -11,11 +11,16 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.junit.Test;
 
 /**
- * Demonstrates how {@link java.util.concurrent.locks.Lock Lock} and its {@link java.util.concurrent.locks.Condition Conditions} work. Queue (backed
- * by a linked list) has a capacity of 20 elements, for the first 50 messages it takes twice as much time for consumer to process them than to the
- * producer to deliver, therefore the queue gets full and the producer has to wait for the consumer's action to complete (<code>notFull.await()</code>
- * ). The other 50 messages take twice as much time for the producer to deliver than for the consumer to process, thus the queue size decreases
- * gradually and before the end of the test consumer catches up and has to wait for the producer to deliver new messages.
+ * <p>
+ * Demonstrates how {@link java.util.concurrent.locks.Lock Lock} and its {@link java.util.concurrent.locks.Condition Conditions} work.
+ * </p>
+ * 
+ * <p>
+ * Queue (backed by a linked list) has a capacity of 20 elements, for the first 50 messages it takes twice as much time for consumer to process them
+ * than to the producer to deliver, therefore the queue gets full and the producer has to wait for the consumer's action to complete (
+ * <code>notFull.await()</code> ). The other 50 messages take twice as much time for the producer to deliver than for the consumer to process, thus
+ * the queue size decreases gradually and before the end of the test consumer catches up and has to wait for the producer to deliver new messages.
+ * </p>
  * 
  * @author sensei
  */

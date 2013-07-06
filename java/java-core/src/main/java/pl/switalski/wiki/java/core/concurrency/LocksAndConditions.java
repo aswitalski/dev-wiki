@@ -1,5 +1,7 @@
 package pl.switalski.wiki.java.core.concurrency;
 
+import static pl.switalski.wiki.java.core.concurrency.utils.ThreadUtils.nap;
+
 import java.util.LinkedList;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
@@ -50,8 +52,8 @@ public class LocksAndConditions {
 		 */
 		public void put(Number number) {
 			lock.lock();
-			pPrint("Locked for put");
 			try {
+				pPrint("Locked for put");
 				// while loop is needed to support "fake" signals
 				while (elements.size() == QUEUE_MAX_SIZE) {
 					pPrint("Queue full, object not put, awaiting...");
@@ -70,14 +72,14 @@ public class LocksAndConditions {
 		}
 		
 		/**
-		 * Takes a number from the beginning of the queue. If not available, waits for it to be delivered.
+		 * Takes a number from the head of the queue. If not available, waits for it to be delivered.
 		 * 
 		 * @return Number taken from the head of the queue
 		 */
 		public Number take() {
 			lock.lock();
-			cPrint("Locked for take");
 			try {
+				cPrint("Locked for take");
 				// while loop is needed to support "fake" signals
 				while (elements.size() == 0) {
 					cPrint("Queue empty, object not taken, awaiting...");
@@ -149,24 +151,10 @@ public class LocksAndConditions {
 		TimeUnit.MINUTES.sleep(10);
 	}
 	
-	/**
-	 * Sleeps for given time.
-	 * 
-	 * @param milliseconds
-	 *            Time in milliseconds
-	 */
-	private static void nap(int milliseconds) {
-		try {
-			TimeUnit.MILLISECONDS.sleep(milliseconds);
-		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
 	private static void print(String msg) {
 		System.out.println(msg);
 	}
-
+	
 	private static void cPrint(String msg) {
 		System.out.println("- " + msg);
 	}

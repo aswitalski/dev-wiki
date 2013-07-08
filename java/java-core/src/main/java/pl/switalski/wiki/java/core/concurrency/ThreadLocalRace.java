@@ -8,6 +8,18 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
 
+/**
+ * <p>
+ * Demonstrates how to use {@link java.lang.ThreadLocal ThreadLocal} class.
+ * </p>
+ * <p>
+ * Several threads compete in a race. All of them invoke <code>numberHolder.get()</code> to assign a number and <code>positionHolder.get()</code> to
+ * find out about their final positions. These numbers are known only to these threads - each invocation returns the same number every time when the
+ * caller thread is the same and a new value when called by unknown thread.
+ * </p>
+ * 
+ * @author sensei
+ */
 public class ThreadLocalRace {
 	
 	private class NumberAssigner extends ThreadLocal<Integer> {
@@ -15,7 +27,9 @@ public class ThreadLocalRace {
 		private final AtomicInteger number = new AtomicInteger(0);
 		
 		protected Integer initialValue() {
-			return number.incrementAndGet();
+			int value = number.incrementAndGet();
+			System.out.println("Generating new number " + value);
+			return value;
 		}
 	}
 

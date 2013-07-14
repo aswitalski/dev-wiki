@@ -1,11 +1,9 @@
 package pl.switalski.wiki.java.hibernate.queries;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 import java.util.List;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,35 +27,14 @@ public class HibernateQueries {
 	private PersistenceService persistenceService;
 
 	/**
-	 * Finds all telecommunication objects which have no numbers or all numbers are greater that 3000.
+	 * Show all telecommunication objects which have no numbers or all numbers are greater that 3000.
 	 */
 	@Test
 	public void queryValidTelecommunicationObjects() {
 		
 		// given
-		TelecommunicationObject objectWithNoNumbers = new TelecommunicationObject(1, "no numbers");
-		persistenceService.save(objectWithNoNumbers);
+		insertTelecommunicationObjects();
 		
-		TelecommunicationObject objectWithAllValidNumbers = new TelecommunicationObject(2, "all valid numbers");
-		objectWithAllValidNumbers.addNumber(new PhoneNumber(1, 4001));
-		objectWithAllValidNumbers.addNumber(new PhoneNumber(2, 5001));
-		objectWithAllValidNumbers.addNumber(new PhoneNumber(3, 6001));
-		objectWithAllValidNumbers.addNumber(new PhoneNumber(4, 7001));
-		persistenceService.save(objectWithAllValidNumbers);
-		
-		TelecommunicationObject objectWithSomeValidNumbers = new TelecommunicationObject(3, "some valid numbers");
-		objectWithSomeValidNumbers.addNumber(new PhoneNumber(5, 2002));
-		objectWithSomeValidNumbers.addNumber(new PhoneNumber(6, 3002));
-		objectWithSomeValidNumbers.addNumber(new PhoneNumber(7, 4002));
-		objectWithSomeValidNumbers.addNumber(new PhoneNumber(8, 5002));
-		persistenceService.save(objectWithSomeValidNumbers);
-		
-		TelecommunicationObject objectWithNoValidNumbers = new TelecommunicationObject(4, "no valid numbers");
-		objectWithNoValidNumbers.addNumber(new PhoneNumber(9, 1003));
-		objectWithNoValidNumbers.addNumber(new PhoneNumber(10, 2003));
-		persistenceService.save(objectWithNoValidNumbers);
-
-
 		String query = "FROM TelecommunicationObject to WHERE 3000 < ALL(SELECT value from PhoneNumber num where num.object = to)";
 		
 		// when
@@ -67,6 +44,103 @@ public class HibernateQueries {
 		assertEquals(2, objects.size());
 	}
 	
+	/**
+	 * Show all telecommunication objects which have any numbers.
+	 */
+	@Test
+	public void queryTelecommunicationObjectsWithAnyNumbersBelow2000() {
+		
+		// given
+		insertTelecommunicationObjects();
+		
+		String query = "FROM TelecommunicationObject to WHERE 2000 > SOME(SELECT value from PhoneNumber num where num.object = to)";
+		
+		// when
+		List<?> objects = persistenceService.getTelecommunicationObjects(query);
+		
+		// then
+		assertEquals(1, objects.size());
+	}
+	
+	/**
+	 * Show all telecommunication objects with greatest phone number, don't show objects with no numbers.
+	 */
+	@Test
+	public void queryTelecommunicationObjectsWithAllNumbersAbove3000() {
+		
+		// given
+		insertTelecommunicationObjects();
+		
+		String query = "SELECT to.name, num.value FROM TelecommunicationObject to, PhoneNumber num "
+				+ "WHERE num.value = (SELECT MAX(num.value) from PhoneNumber num where num.object = to) ORDER by to.id";
+
+		// when
+		List<?> objects = persistenceService.getTelecommunicationObjects(query);
+		
+		// then
+		assertEquals(3, objects.size());
+		
+		assertEquals(7001, ((Object[]) objects.get(0))[1]);
+		assertEquals(5002, ((Object[]) objects.get(1))[1]);
+		assertEquals(2003, ((Object[]) objects.get(2))[1]);
+	}
+	
+	/**
+	 * Show all telecommunication objects having all numbers ending with digit 3.
+	 */
+	@Test
+	public void queryTelecommunicationWithNumbersEndingWith3() {
+		
+		// given
+		insertTelecommunicationObjects();
+		
+		String query = "SELECT to FROM TelecommunicationObject to "
+				+ "WHERE (SELECT COUNT(num) FROM to.numbers num) = (SELECT COUNT(num3) FROM to.numbers num3 WHERE MOD(num3.value, 10) = 3) "
+				+ "AND (SELECT COUNT(num) FROM to.numbers num) > 0";
+		
+		// when
+		List<?> objects = persistenceService.getTelecommunicationObjects(query);
+		
+		// then
+		assertEquals(1, objects.size());
+	}
+	
+	/**
+	 * Show all telecommunication objects and quantity of attached numbers - with inner join.
+	 */
+	@Test
+	public void queryTelecommunicationAndQuantityOfNumbersWithInnerJoin() {
+		
+		// given
+		insertTelecommunicationObjects();
+		
+		String query = "SELECT to.name, COUNT(num) FROM TelecommunicationObject to, PhoneNumber num WHERE num.object = to GROUP BY to.name";
+		
+		// when
+		List<?> objects = persistenceService.getTelecommunicationObjects(query);
+		
+		// then
+		assertEquals(3, objects.size());
+	}
+	
+	/**
+	 * Show all telecommunication objects and quantity of attached numbers - with outer join.
+	 */
+	@Test
+	public void queryTelecommunicationAndQuantityOfNumbersWithOuterJoin() {
+		
+		// given
+		insertTelecommunicationObjects();
+		
+		String query = "SELECT to.name, COUNT(num) FROM TelecommunicationObject to LEFT OUTER JOIN to.numbers num GROUP BY to.name";
+		
+		// when
+		List<?> objects = persistenceService.getTelecommunicationObjects(query);
+		
+		// then
+		assertEquals(4, objects.size());
+	}
+
 	@Test
 	public void querySingleTelecommunicationObject() {
 		
@@ -83,31 +157,31 @@ public class HibernateQueries {
 		assertEquals(1, objects.size());
 	}
 	
-	@Test
-	@Ignore
-	public void queryTelecommunicationObject() {
+	/**
+	 * Inserts data re-used in several tests.
+	 */
+	private void insertTelecommunicationObjects() {
+
+		TelecommunicationObject objectWithNoNumbers = new TelecommunicationObject(1, "no numbers");
+		persistenceService.save(objectWithNoNumbers);
 		
-		// given
-		int objectId = 1;
+		TelecommunicationObject objectWithAllValidNumbers = new TelecommunicationObject(2, "all numbers above 3000");
+		objectWithAllValidNumbers.addNumber(new PhoneNumber(1, 4001));
+		objectWithAllValidNumbers.addNumber(new PhoneNumber(2, 5001));
+		objectWithAllValidNumbers.addNumber(new PhoneNumber(3, 6001));
+		objectWithAllValidNumbers.addNumber(new PhoneNumber(4, 7001));
+		persistenceService.save(objectWithAllValidNumbers);
 		
-		// when
-		TelecommunicationObject object = persistenceService.getTelecommunicationObject(objectId);
+		TelecommunicationObject objectWithSomeValidNumbers = new TelecommunicationObject(3, "some numbers above 3000");
+		objectWithSomeValidNumbers.addNumber(new PhoneNumber(5, 2002));
+		objectWithSomeValidNumbers.addNumber(new PhoneNumber(6, 3002));
+		objectWithSomeValidNumbers.addNumber(new PhoneNumber(7, 4002));
+		objectWithSomeValidNumbers.addNumber(new PhoneNumber(8, 5002));
+		persistenceService.save(objectWithSomeValidNumbers);
 		
-		// then
-		assertNotNull(object);
-	}
-	
-	@Test
-	@Ignore
-	public void queryNumber() {
-		
-		// given
-		int numberId = 1;
-		
-		// when
-		PhoneNumber number = persistenceService.getNumber(numberId);
-		
-		// then
-		assertNotNull(number);
+		TelecommunicationObject objectWithNoValidNumbers = new TelecommunicationObject(4, "no numbers above 3000");
+		objectWithNoValidNumbers.addNumber(new PhoneNumber(9, 1003));
+		objectWithNoValidNumbers.addNumber(new PhoneNumber(10, 2003));
+		persistenceService.save(objectWithNoValidNumbers);
 	}
 }

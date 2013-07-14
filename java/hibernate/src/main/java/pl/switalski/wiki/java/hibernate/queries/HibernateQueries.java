@@ -30,7 +30,7 @@ public class HibernateQueries {
 	 * Show all telecommunication objects which have no numbers or all numbers are greater that 3000.
 	 */
 	@Test
-	public void queryValidTelecommunicationObjects() {
+	public void getTelecommunicationObjectsWithAllNumbersAbove3000() {
 		
 		// given
 		insertTelecommunicationObjects();
@@ -48,7 +48,7 @@ public class HibernateQueries {
 	 * Show all telecommunication objects which have any numbers.
 	 */
 	@Test
-	public void queryTelecommunicationObjectsWithAnyNumbersBelow2000() {
+	public void getTelecommunicationObjectsWithAnyNumbersBelow2000() {
 		
 		// given
 		insertTelecommunicationObjects();
@@ -66,7 +66,7 @@ public class HibernateQueries {
 	 * Show all telecommunication objects with greatest phone number, don't show objects with no numbers.
 	 */
 	@Test
-	public void queryTelecommunicationObjectsWithAllNumbersAbove3000() {
+	public void getTelecommunicationObjectsWithGreatestNumber() {
 		
 		// given
 		insertTelecommunicationObjects();
@@ -86,10 +86,10 @@ public class HibernateQueries {
 	}
 	
 	/**
-	 * Show all telecommunication objects having all numbers ending with digit 3.
+	 * Show all telecommunication objects having all numbers ending with digit 3, omit objects with no numbers.
 	 */
 	@Test
-	public void queryTelecommunicationWithNumbersEndingWith3() {
+	public void getTelecommunicationWithAllNumbersEndingWith3() {
 		
 		// given
 		insertTelecommunicationObjects();
@@ -109,40 +109,85 @@ public class HibernateQueries {
 	 * Show all telecommunication objects and quantity of attached numbers - with inner join.
 	 */
 	@Test
-	public void queryTelecommunicationAndQuantityOfNumbersWithInnerJoin() {
+	public void getTelecommunicationObjectsAndQuantityOfNumbersWithInnerJoin() {
 		
 		// given
 		insertTelecommunicationObjects();
 		
-		String query = "SELECT to.name, COUNT(num) FROM TelecommunicationObject to, PhoneNumber num WHERE num.object = to GROUP BY to.name";
+		String query = "SELECT to.name, to.id, COUNT(num) FROM TelecommunicationObject to, PhoneNumber num WHERE num.object = to GROUP BY to.name, to.id ORDER BY to.id";
 		
 		// when
 		List<?> objects = persistenceService.getTelecommunicationObjects(query);
 		
 		// then
 		assertEquals(3, objects.size());
+		assertEquals(4l, ((Object[]) objects.get(0))[2]);
+		assertEquals(4l, ((Object[]) objects.get(1))[2]);
+		assertEquals(2l, ((Object[]) objects.get(2))[2]);
 	}
 	
 	/**
 	 * Show all telecommunication objects and quantity of attached numbers - with outer join.
 	 */
 	@Test
-	public void queryTelecommunicationAndQuantityOfNumbersWithOuterJoin() {
+	public void getTelecommunicationObjectsAndQuantityOfNumbersWithOuterJoin() {
 		
 		// given
 		insertTelecommunicationObjects();
 		
-		String query = "SELECT to.name, COUNT(num) FROM TelecommunicationObject to LEFT OUTER JOIN to.numbers num GROUP BY to.name";
+		String query = "SELECT to.name, to.id, COUNT(num) FROM TelecommunicationObject to LEFT OUTER JOIN to.numbers num GROUP BY to.name, to.id ORDER BY to.id";
 		
 		// when
 		List<?> objects = persistenceService.getTelecommunicationObjects(query);
 		
 		// then
 		assertEquals(4, objects.size());
+		assertEquals(0l, ((Object[]) objects.get(0))[2]);
+	}
+	
+	/**
+	 * Show all telecommunication objects having at least 4 numbers.
+	 */
+	@Test
+	public void getTelecommunicationObjectsHaving4Numbers() {
+		
+		// given
+		insertTelecommunicationObjects();
+		
+		String query = "SELECT to.name, COUNT(num) FROM TelecommunicationObject to, PhoneNumber num WHERE num.object = to GROUP BY to.name HAVING COUNT(num) = 4";
+		
+		// when
+		List<?> objects = persistenceService.getTelecommunicationObjects(query);
+		
+		// then
+		assertEquals(2, objects.size());
+	}
+	
+	/**
+	 * Show difference between numbers .
+	 */
+	@Test
+	public void getDifferenceBetweenNumbers() {
+		
+		// given
+		insertTelecommunicationObjects();
+		
+		String query = "SELECT number.object.name, number.id, number.value, number.value - prevNumber.value from PhoneNumber number, PhoneNumber prevNumber WHERE prevNumber.id = (SELECT MAX(maxNum.id) from PhoneNumber maxNum WHERE maxNum.id < number.id AND maxNum.object = number.object)";
+		
+		// when
+		List<?> objects = persistenceService.getTelecommunicationObjects(query);
+		
+		// then
+		assertEquals(7, objects.size());
+		for (int i = 0; i < objects.size(); i++) {
+			Object[] values = (Object[]) objects.get(i);
+			assertEquals(1000, values[3]);
+		}
+
 	}
 
 	@Test
-	public void querySingleTelecommunicationObject() {
+	public void getSingleTelecommunicationObject() {
 		
 		// given
 		TelecommunicationObject objectWithNoNumbers = new TelecommunicationObject(1, "no numbers");

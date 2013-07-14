@@ -1,0 +1,26 @@
+SQL> create table TEL_OBJECTS (
+  2  id number primary key,
+  3  name varchar(40) 
+  4  );
+
+Table created.
+
+SQL> create table NUMBERS (
+  2  id number primary key,
+  3  value number,
+  4  object_id references TEL_OBJECTS
+  5  );
+
+Table created.
+
+SQL> grant all on TEL_OBJECTS to wiki;
+
+Grant succeeded.
+
+SQL> grant all on NUMBERS to wiki;
+
+Grant succeeded.
+
+SQL> commit;
+
+Commit complete.

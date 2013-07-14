@@ -5,7 +5,7 @@
 
 	<parent>
 		<groupId>pl.switalski.dev.wiki.java</groupId>
-		<artifactId>java-core-parent</artifactId>
+		<artifactId>java-parent</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>

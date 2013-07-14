@@ -25,17 +25,18 @@ public class HibernateQueries {
 	
 	@Autowired
 	private PersistenceService persistenceService;
-
+	
 	/**
-	 * Show all telecommunication objects which have no numbers or all numbers are greater that 3000.
+	 * Show all telecommunication objects which have numbers not between 2000 and 6000.
 	 */
 	@Test
-	public void getTelecommunicationObjectsWithAllNumbersAbove3000() {
+	public void getTelecommunicationObjectsWithAllNumbersNotBetween2000And6000() {
 		
 		// given
 		insertTelecommunicationObjects();
 		
-		String query = "FROM TelecommunicationObject to WHERE 3000 < ALL(SELECT value from PhoneNumber num where num.object = to)";
+		String query = "SELECT to FROM TelecommunicationObject to "
+				+ "WHERE EXISTS (SELECT value from PhoneNumber num2 WHERE num2.object = to AND value NOT BETWEEN 2000 AND 6000)";
 		
 		// when
 		List<?> objects = persistenceService.getTelecommunicationObjects(query);
@@ -45,7 +46,25 @@ public class HibernateQueries {
 	}
 	
 	/**
-	 * Show all telecommunication objects which have any numbers.
+	 * Show all telecommunication objects which have no numbers or all numbers are greater that 3000.
+	 */
+	@Test
+	public void getTelecommunicationObjectsWithAllNumbersAbove3000() {
+		
+		// given
+		insertTelecommunicationObjects();
+		
+		String query = "FROM TelecommunicationObject to WHERE 3000 < ALL(SELECT value FROM PhoneNumber num WHERE num.object = to)";
+		
+		// when
+		List<?> objects = persistenceService.getTelecommunicationObjects(query);
+		
+		// then
+		assertEquals(2, objects.size());
+	}
+	
+	/**
+	 * Show all telecommunication objects which have any numbers less than 2000.
 	 */
 	@Test
 	public void getTelecommunicationObjectsWithAnyNumbersBelow2000() {
@@ -53,7 +72,7 @@ public class HibernateQueries {
 		// given
 		insertTelecommunicationObjects();
 		
-		String query = "FROM TelecommunicationObject to WHERE 2000 > SOME(SELECT value from PhoneNumber num where num.object = to)";
+		String query = "FROM TelecommunicationObject to WHERE 2000 > SOME(SELECT value FROM PhoneNumber num WHERE num.object = to)";
 		
 		// when
 		List<?> objects = persistenceService.getTelecommunicationObjects(query);
@@ -72,8 +91,8 @@ public class HibernateQueries {
 		insertTelecommunicationObjects();
 		
 		String query = "SELECT to.name, num.value FROM TelecommunicationObject to, PhoneNumber num "
-				+ "WHERE num.value = (SELECT MAX(num.value) from PhoneNumber num where num.object = to) ORDER by to.id";
-
+				+ "WHERE num.value = (SELECT MAX(maxNum.value) FROM PhoneNumber maxNum WHERE maxNum.object = to) ORDER by to.id";
+		
 		// when
 		List<?> objects = persistenceService.getTelecommunicationObjects(query);
 		
@@ -106,7 +125,69 @@ public class HibernateQueries {
 	}
 	
 	/**
-	 * Show all telecommunication objects and quantity of attached numbers - with inner join.
+	 * Show all telecommunication objects ordered by quantity of numbers attached and id.
+	 */
+	@Test
+	public void getTelecommunicationOrderedByQuantityOfNumbersAttached() {
+		
+		// given
+		insertTelecommunicationObjects();
+		
+		String query = "SELECT to.name, COUNT(num), SUM(num.value) FROM TelecommunicationObject to LEFT OUTER JOIN to.numbers num "
+				+ "GROUP BY to.name ORDER BY COUNT(num) DESC, SUM(num.value) ASC";
+		
+		// when
+		List<?> objects = persistenceService.getTelecommunicationObjects(query);
+		
+		// then
+		assertEquals(4, objects.size());
+		
+		assertEquals("some numbers above 3000", ((Object[]) objects.get(0))[0]);
+
+		assertEquals(4l, ((Object[]) objects.get(0))[1]);
+		assertEquals(4l, ((Object[]) objects.get(1))[1]);
+		assertEquals(2l, ((Object[]) objects.get(2))[1]);
+		assertEquals(0l, ((Object[]) objects.get(3))[1]);
+	}
+	
+	/**
+	 * Show all telecommunication objects having numbers - with exists.
+	 */
+	@Test
+	public void getTelecommunicationObjectsHavingNumbersWithExists() {
+		
+		// given
+		insertTelecommunicationObjects();
+		
+		String query = "SELECT to.name FROM TelecommunicationObject to WHERE EXISTS (SELECT num FROM PhoneNumber num where num.object = to)";
+		
+		// when
+		List<?> objects = persistenceService.getTelecommunicationObjects(query);
+		
+		// then
+		assertEquals(3, objects.size());
+	}
+	
+	/**
+	 * Show all telecommunication objects having 'some' in name - using LIKE.
+	 */
+	@Test
+	public void getTelecommunicationWithSomeInName() {
+		
+		// given
+		insertTelecommunicationObjects();
+		
+		String query = "SELECT to FROM TelecommunicationObject to WHERE to.name LIKE '%some%'";
+		
+		// when
+		List<?> objects = persistenceService.getTelecommunicationObjects(query);
+		
+		// then
+		assertEquals(1, objects.size());
+	}
+	
+	/**
+	 * Show all telecommunication objects and quantity of attached numbers - with implicit INNER JOIN.
 	 */
 	@Test
 	public void getTelecommunicationObjectsAndQuantityOfNumbersWithInnerJoin() {
@@ -127,7 +208,7 @@ public class HibernateQueries {
 	}
 	
 	/**
-	 * Show all telecommunication objects and quantity of attached numbers - with outer join.
+	 * Show all telecommunication objects and quantity of attached numbers - with OUTER JOIN.
 	 */
 	@Test
 	public void getTelecommunicationObjectsAndQuantityOfNumbersWithOuterJoin() {
@@ -172,7 +253,8 @@ public class HibernateQueries {
 		// given
 		insertTelecommunicationObjects();
 		
-		String query = "SELECT number.object.name, number.id, number.value, number.value - prevNumber.value from PhoneNumber number, PhoneNumber prevNumber WHERE prevNumber.id = (SELECT MAX(maxNum.id) from PhoneNumber maxNum WHERE maxNum.id < number.id AND maxNum.object = number.object)";
+		String query = "SELECT number.object.name, number.id, number.value, number.value - prevNumber.value from PhoneNumber number, PhoneNumber prevNumber "
+				+ "WHERE prevNumber.id = (SELECT MAX(maxNum.id) from PhoneNumber maxNum WHERE maxNum.id < number.id AND maxNum.object = number.object)";
 		
 		// when
 		List<?> objects = persistenceService.getTelecommunicationObjects(query);
@@ -181,11 +263,14 @@ public class HibernateQueries {
 		assertEquals(7, objects.size());
 		for (int i = 0; i < objects.size(); i++) {
 			Object[] values = (Object[]) objects.get(i);
+			// all numbers differ by 1000
 			assertEquals(1000, values[3]);
 		}
-
 	}
-
+	
+	/**
+	 * Selects all objects without using SELECT keyword.
+	 */
 	@Test
 	public void getSingleTelecommunicationObject() {
 		
@@ -206,7 +291,7 @@ public class HibernateQueries {
 	 * Inserts data re-used in several tests.
 	 */
 	private void insertTelecommunicationObjects() {
-
+		
 		TelecommunicationObject objectWithNoNumbers = new TelecommunicationObject(1, "no numbers");
 		persistenceService.save(objectWithNoNumbers);
 		

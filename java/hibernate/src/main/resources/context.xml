@@ -13,29 +13,45 @@
 
 	<tx:annotation-driven transaction-manager="transactionManager" />
 
-	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
-		<property name="driverClass" value="oracle.jdbc.driver.OracleDriver" />
-		<property name="jdbcUrl" value="jdbc:oracle:thin:@server.vm:1521:xe" />
+	<!-- <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource"> -->
+	<!-- <property name="driverClass" value="oracle.jdbc.driver.OracleDriver" 
+		/> -->
+	<!-- <property name="jdbcUrl" value="jdbc:oracle:thin:@server.vm:1521:xe" 
+		/> -->
+	<!-- <property name="user" value="wiki" /> -->
+	<!-- <property name="password" value="wiki" /> -->
+	<!-- <property name="initialPoolSize" value="1" /> -->
+	<!-- <property name="maxPoolSize" value="3" /> -->
+	<!-- <property name="acquireRetryAttempts" value="5" /> -->
+	<!-- <property name="maxIdleTime" value="0" /> -->
+	<!-- <property name="maxIdleTimeExcessConnections" value="0" /> -->
+	<!-- </bean> -->
+
+	<bean id="dataSource" class="oracle.jdbc.pool.OracleDataSource">
+		<property name="dataSourceName" value="ds" />
+		<property name="URL" value="jdbc:oracle:thin:@server.vm:1521:xe" />
 		<property name="user" value="wiki" />
 		<property name="password" value="wiki" />
-		<property name="initialPoolSize" value="1" />
-		<property name="maxPoolSize" value="3" />
-		<property name="acquireRetryAttempts" value="5" />
-		<property name="maxIdleTime" value="0" />
-		<property name="maxIdleTimeExcessConnections" value="0" />
 	</bean>
-	
-	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+
+	<!-- this transaction manager does not allow to roll the transaction back, just commits automatically -->
+	<!-- <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager"> -->
+	<!-- <property name="dataSource" ref="dataSource" /> -->
+	<!-- </bean> -->
+
+	<bean id="transactionManager"
+		class="org.springframework.orm.hibernate3.HibernateTransactionManager">
 		<property name="dataSource" ref="dataSource" />
+		<property name="sessionFactory" ref="sessionFactory" />
 	</bean>
 
-	<!-- Hibernate -->
-
-	<bean id="sessionFactory" class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+	<bean id="sessionFactory"
+		class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
 		<property name="dataSource" ref="dataSource" />
 		<property name="annotatedClasses">
 			<list>
-				<value>pl.switalski.wiki.java.hibernate.model.TelecommunicationObject</value>
+				<value>pl.switalski.wiki.java.hibernate.model.TelecommunicationObject
+				</value>
 				<value>pl.switalski.wiki.java.hibernate.model.PhoneNumber</value>
 			</list>
 		</property>
@@ -47,21 +63,23 @@
 				<prop key="hibernate.hbm2ddl.export">true</prop>
 			</props>
 		</property>
-		<!-- <property name="eventListeners">
+		<property name="eventListeners">
 			<map>
 				<entry key="post-insert" value-ref="persistenceServiceListener" />
 				<entry key="post-update" value-ref="persistenceServiceListener" />
 				<entry key="post-delete" value-ref="persistenceServiceListener" />
 			</map>
-		</property> -->
+		</property>
 	</bean>
-	
-	<bean id="hibernateTransactionManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+
+	<bean id="hibernateTransactionManager"
+		class="org.springframework.orm.hibernate3.HibernateTransactionManager">
 		<property name="sessionFactory" ref="sessionFactory" />
 	</bean>
 
 	<bean id="hibernateTemplate" class="org.springframework.orm.hibernate3.HibernateTemplate">
 		<property name="sessionFactory" ref="sessionFactory" />
+		<property name="exposeNativeSession" value="false" />
 	</bean>
 
 </beans>

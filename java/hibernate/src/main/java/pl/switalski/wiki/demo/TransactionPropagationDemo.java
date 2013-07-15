@@ -9,10 +9,10 @@ import org.springframework.transaction.IllegalTransactionStateException;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import pl.switalski.wiki.java.hibernate.beans.PropagationService;
+import pl.switalski.wiki.java.spring.scopes.beans.PropagationService;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = "/context/hibernate.xml")
+@ContextConfiguration(locations = "/context/propagation.xml")
 @Transactional(propagation = Propagation.REQUIRED)
 public class TransactionPropagationDemo {
 	
@@ -27,6 +27,11 @@ public class TransactionPropagationDemo {
 	@Test
 	public void testMandatoryCallingNeverDirectly() {
 		propagationService.mandatoryCallingNeverDirectly();
+	}
+	
+	@Test(expected = IllegalTransactionStateException.class)
+	public void testMandatoryCallingNeverViaProxy() {
+		propagationService.mandatoryCallingNeverViaProxy();
 	}
 	
 	@Test(expected = IllegalTransactionStateException.class)

@@ -1,5 +1,7 @@
-package pl.switalski.wiki.java.hibernate.beans;
+package pl.switalski.wiki.java.spring.scopes.beans;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -8,6 +10,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class PropagationService {
 	
+	@Autowired
+	private ApplicationContext context;
+
 	@Transactional(propagation = Propagation.REQUIRED)
 	public void required() {
 	}
@@ -41,4 +46,9 @@ public class PropagationService {
 		never();
 	}
 	
+	@Transactional(propagation = Propagation.MANDATORY)
+	public void mandatoryCallingNeverViaProxy() {
+		context.getBean(PropagationService.class).never();
+	}
+
 }

@@ -35,6 +35,16 @@ public class PersistenceService {
 	public void save(TelecommunicationObject object) {
 		hibernateTemplate.save(object);
 	}
+	
+	/**
+	 * Saves specified phone number.
+	 * 
+	 * @param number
+	 *            Phone number
+	 */
+	public void save(PhoneNumber number) {
+		hibernateTemplate.save(number);
+	}
 
 	public TelecommunicationObject getTelecommunicationObject(int id) {
 		TelecommunicationObject object = (TelecommunicationObject) hibernateTemplate.get(TelecommunicationObject.class, id);

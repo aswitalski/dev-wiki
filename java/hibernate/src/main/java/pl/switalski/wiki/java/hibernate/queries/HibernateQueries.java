@@ -58,7 +58,64 @@ public class HibernateQueries {
 	}
 	
 	/**
-	 * Show all telecommunication objects which have numbers not between 2000 and 6000 - using EXISTS.
+	 * Show telecommunication objects which have no numbers or all numbers are greater than 3000.
+	 */
+	@Test
+	public void getTelecommunicationObjectsWithAllNumbersAbove3000() {
+		
+		// given
+		insertTelecommunicationObjects();
+		
+		String query = "FROM TelecommunicationObject to WHERE 3000 < ALL(SELECT num.value FROM PhoneNumber num WHERE num.object = to)";
+		
+		// when
+		List<?> result = persistenceService.getTelecommunicationObjects(query);
+		
+		// then
+		assertEquals(2, result.size());
+	}
+	
+	/**
+	 * Show telecommunication objects which have any numbers greater than 3000.
+	 */
+	@Test
+	public void getTelecommunicationObjectsWithAnyNumbersAbove3000() {
+		
+		// given
+		insertTelecommunicationObjects();
+		
+		String query = "FROM TelecommunicationObject to WHERE 3000 < ANY(SELECT value FROM PhoneNumber num WHERE num.object = to)";
+		
+		// when
+		List<?> result = persistenceService.getTelecommunicationObjects(query);
+		
+		// then
+		assertEquals(2, result.size());
+	}
+	
+	/**
+	 * Show all telecommunication objects which have half of numbers greater than 4000.
+	 */
+	@Test
+	public void getTelecommunicationObjectsWithHalfOfNumbersAbove4000() {
+		
+		// given
+		insertTelecommunicationObjects();
+		
+		String query = "SELECT to.name FROM TelecommunicationObject to WHERE (SELECT 2 * COUNT(num) FROM to.numbers num "
+				+ "WHERE num.value > 4000) = (SELECT COUNT(num) FROM to.numbers num) ORDER by to.id";
+		
+		// when
+		List<?> result = persistenceService.getTelecommunicationObjects(query);
+		
+		// then
+		assertEquals(2, result.size());
+		assertEquals("no numbers", result.get(0));
+		assertEquals("some numbers above 3000", result.get(1));
+	}
+	
+	/**
+	 * Show telecommunication objects which have numbers not between 2000 and 6000 - using EXISTS.
 	 */
 	@Test
 	public void getTelecommunicationObjectsWithAllNumbersNotBetween2000And6000() {
@@ -77,25 +134,7 @@ public class HibernateQueries {
 	}
 	
 	/**
-	 * Show all telecommunication objects which have no numbers or all numbers are greater that 3000.
-	 */
-	@Test
-	public void getTelecommunicationObjectsWithAllNumbersAbove3000() {
-		
-		// given
-		insertTelecommunicationObjects();
-		
-		String query = "FROM TelecommunicationObject to WHERE 3000 < ALL(SELECT value FROM PhoneNumber num WHERE num.object = to)";
-		
-		// when
-		List<?> result = persistenceService.getTelecommunicationObjects(query);
-		
-		// then
-		assertEquals(2, result.size());
-	}
-	
-	/**
-	 * Show all telecommunication objects which have any numbers less than 2000.
+	 * Show telecommunication objects which have any numbers less than 2000.
 	 */
 	@Test
 	public void getTelecommunicationObjectsWithAnyNumbersBelow2000() {
@@ -113,7 +152,7 @@ public class HibernateQueries {
 	}
 	
 	/**
-	 * Show all telecommunication objects with greatest phone number, don't show objects with no numbers.
+	 * Show telecommunication objects with greatest phone number, don't show objects with no numbers.
 	 */
 	@Test
 	public void getTelecommunicationObjectsWithGreatestNumber() {

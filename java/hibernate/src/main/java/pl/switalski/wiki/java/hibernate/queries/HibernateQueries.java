@@ -58,7 +58,7 @@ public class HibernateQueries {
 	}
 	
 	/**
-	 * Show all telecommunication objects which have numbers not between 2000 and 6000.
+	 * Show all telecommunication objects which have numbers not between 2000 and 6000 - using EXISTS.
 	 */
 	@Test
 	public void getTelecommunicationObjectsWithAllNumbersNotBetween2000And6000() {
@@ -136,7 +136,7 @@ public class HibernateQueries {
 	}
 	
 	/**
-	 * Show all telecommunication objects having all numbers ending with digit 3, omit objects with no numbers.
+	 * Show all telecommunication objects having all numbers ending with digit 3, skip objects with no numbers.
 	 */
 	@Test
 	public void getTelecommunicationWithAllNumbersEndingWith3() {
@@ -172,9 +172,7 @@ public class HibernateQueries {
 		
 		// then
 		assertEquals(4, result.size());
-		
-		assertEquals("some numbers above 3000", ((Object[]) result.get(0))[0]);
-
+		assertEquals("some numbers above 3000", get(result, 0, 0));
 		assertEquals(4l, get(result, 0, 1));
 		assertEquals(4l, get(result, 1, 1));
 		assertEquals(2l, get(result, 2, 1));
@@ -182,7 +180,7 @@ public class HibernateQueries {
 	}
 	
 	/**
-	 * Show all telecommunication objects having numbers - with exists.
+	 * Show all telecommunication objects having numbers - with EXISTS.
 	 */
 	@Test
 	public void getTelecommunicationObjectsHavingNumbersWithExists() {
@@ -258,7 +256,8 @@ public class HibernateQueries {
 	}
 	
 	/**
-	 * Groups and counts numbers by telecommunication object - with RIGHT OUTER JOIN. Also shows unassigned numbers.
+	 * Groups and counts numbers by telecommunication object with RIGHT OUTER JOIN. Shows unassigned numbers, because right join includes null
+	 * objects. Would be the only way to do such query if PhoneNumber did not have a reference to its TelecommunicationObject.
 	 */
 	@Test
 	public void groupAndCountNumbersWithRightOuterJoin() {
@@ -266,16 +265,14 @@ public class HibernateQueries {
 		// given
 		insertTelecommunicationObjects();
 		
-		String query = "SELECT to.name, to.id, COUNT(num) FROM TelecommunicationObject to RIGHT OUTER JOIN to.numbers num GROUP BY to.name, to.id ORDER BY to.id";
+		String query = "SELECT COUNT(num), to.name FROM TelecommunicationObject to RIGHT OUTER JOIN to.numbers num GROUP BY to.name ORDER BY COUNT(num) DESC";
 		
 		// when
 		List<?> result = persistenceService.getTelecommunicationObjects(query);
 		
 		// then
 		assertEquals(4, result.size());
-		
-		assertNull(get(result, 3, 0));
-		assertNull(get(result, 3, 1));
+		assertNull(get(result, 3, 1)); // last row defines one unassigned number
 	}
 	
 	/**
@@ -297,7 +294,7 @@ public class HibernateQueries {
 	}
 	
 	/**
-	 * Show difference between numbers .
+	 * Show difference between subsequent phone numbers.
 	 */
 	@Test
 	public void getDifferenceBetweenNumbers() {
@@ -338,6 +335,16 @@ public class HibernateQueries {
 		assertEquals(1, result.size());
 	}
 	
+	/**
+	 * Returns element from query result.
+	 * 
+	 * @param result
+	 *            List of returned object arrays
+	 * @param index
+	 *            Index
+	 * @param column
+	 *            Column
+	 */
 	public Object get(List<?> result, int index, int column) {
 		return ((Object[]) result.get(index))[column];
 	}

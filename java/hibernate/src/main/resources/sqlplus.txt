@@ -10,6 +10,28 @@ SQL> create table NUMBERS (
   3  value number,
   4  object_id references TEL_OBJECTS
   5  );
+  
+create table OBSERVATORIES (
+	id number primary key,
+	name varchar(40)
+);
+
+create public synonym METEOROLOGICAL_OBSERVATORIES for OBSERVATORIES;
+
+create table MEASUREMENTS (
+	id number primary key,
+	ts timestamp not null,
+	reading number (5,2),
+	observatory_id references OBSERVATORIES
+);
+
+SQL> grant all on meteorological_observatories to wiki;
+
+Grant succeeded.
+
+SQL> grant all on meteorological_measurements to wiki;
+
+Grant succeeded.
 
 Table created.
 

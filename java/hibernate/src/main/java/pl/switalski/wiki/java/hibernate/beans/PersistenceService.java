@@ -27,23 +27,13 @@ public class PersistenceService {
 	private DataSource dataSource;
 	
 	/**
-	 * Saves specified telecommunication object.
+	 * Saves specified entity.
 	 * 
-	 * @param object
-	 *            Telecommunication object
+	 * @param entity
+	 *            Entity
 	 */
-	public void save(TelecommunicationObject object) {
-		hibernateTemplate.save(object);
-	}
-	
-	/**
-	 * Saves specified phone number.
-	 * 
-	 * @param number
-	 *            Phone number
-	 */
-	public void save(PhoneNumber number) {
-		hibernateTemplate.save(number);
+	public void save(Object entity) {
+		hibernateTemplate.save(entity);
 	}
 
 	public TelecommunicationObject getTelecommunicationObject(int id) {
@@ -56,10 +46,9 @@ public class PersistenceService {
 		return number;
 	}
 	
-	public List<TelecommunicationObject> getTelecommunicationObjects(String query) {
+	public List<?> getResult(String query) {
 		hibernateTemplate.getSessionFactory().getCurrentSession().setFlushMode(FlushMode.AUTO);
-		@SuppressWarnings("unchecked")
-		List<TelecommunicationObject> objects = (List<TelecommunicationObject>) hibernateTemplate.find(query);
+		List<?> objects = hibernateTemplate.find(query);
 		return objects;
 	}
 	

@@ -48,6 +48,8 @@
 			<list>
 				<value>pl.switalski.wiki.java.hibernate.model.TelecommunicationObject</value>
 				<value>pl.switalski.wiki.java.hibernate.model.PhoneNumber</value>
+				<value>pl.switalski.wiki.java.hibernate.model.Observatory</value>
+				<value>pl.switalski.wiki.java.hibernate.model.Measurement</value>
 			</list>
 		</property>
 		<property name="hibernateProperties">

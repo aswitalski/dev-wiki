@@ -22,7 +22,7 @@ import pl.switalski.wiki.java.hibernate.model.TelecommunicationObject;
 @ContextConfiguration(locations = "/context/hibernate.xml")
 @Transactional(propagation = Propagation.REQUIRED)
 @TransactionConfiguration(defaultRollback = true)
-public class HibernateQueriesDemo {
+public class BasicQueriesDemo {
 	
 	@Autowired
 	private PersistenceService persistenceService;
@@ -69,7 +69,7 @@ public class HibernateQueriesDemo {
 		String query = "FROM TelecommunicationObject to WHERE 3000 < ALL(SELECT num.value FROM PhoneNumber num WHERE num.object = to)";
 		
 		// when
-		List<?> result = persistenceService.getTelecommunicationObjects(query);
+		List<?> result = persistenceService.getResult(query);
 		
 		// then
 		assertEquals(2, result.size());
@@ -87,7 +87,7 @@ public class HibernateQueriesDemo {
 		String query = "FROM TelecommunicationObject to WHERE 3000 < ANY(SELECT value FROM PhoneNumber num WHERE num.object = to)";
 		
 		// when
-		List<?> result = persistenceService.getTelecommunicationObjects(query);
+		List<?> result = persistenceService.getResult(query);
 		
 		// then
 		assertEquals(2, result.size());
@@ -106,7 +106,7 @@ public class HibernateQueriesDemo {
 				+ "WHERE num.value > 4000) = (SELECT COUNT(num) FROM to.numbers num) ORDER by to.id";
 		
 		// when
-		List<?> result = persistenceService.getTelecommunicationObjects(query);
+		List<?> result = persistenceService.getResult(query);
 		
 		// then
 		assertEquals(2, result.size());
@@ -127,7 +127,7 @@ public class HibernateQueriesDemo {
 				+ "WHERE EXISTS (SELECT value from PhoneNumber num WHERE num.object = to AND value NOT BETWEEN 2000 AND 6000)";
 		
 		// when
-		List<?> result = persistenceService.getTelecommunicationObjects(query);
+		List<?> result = persistenceService.getResult(query);
 		
 		// then
 		assertEquals(2, result.size());
@@ -145,7 +145,7 @@ public class HibernateQueriesDemo {
 		String query = "FROM TelecommunicationObject to WHERE 2000 > SOME(SELECT value FROM PhoneNumber num WHERE num.object = to)";
 		
 		// when
-		List<?> result = persistenceService.getTelecommunicationObjects(query);
+		List<?> result = persistenceService.getResult(query);
 		
 		// then
 		assertEquals(1, result.size());
@@ -164,7 +164,7 @@ public class HibernateQueriesDemo {
 				+ "WHERE num.value = (SELECT MAX(maxNum.value) FROM PhoneNumber maxNum WHERE maxNum.object = to) ORDER by to.id";
 		
 		// when
-		List<?> result = persistenceService.getTelecommunicationObjects(query);
+		List<?> result = persistenceService.getResult(query);
 		
 		// then
 		assertEquals(3, result.size());
@@ -188,7 +188,7 @@ public class HibernateQueriesDemo {
 				+ "AND (SELECT COUNT(num) FROM to.numbers num) > 0"; // to skip telecommunication objects with no number
 		
 		// when
-		List<?> result = persistenceService.getTelecommunicationObjects(query);
+		List<?> result = persistenceService.getResult(query);
 		
 		// then
 		assertEquals(1, result.size());
@@ -207,7 +207,7 @@ public class HibernateQueriesDemo {
 				+ "GROUP BY to.name ORDER BY COUNT(num) DESC, SUM(num.value) ASC";
 		
 		// when
-		List<?> result = persistenceService.getTelecommunicationObjects(query);
+		List<?> result = persistenceService.getResult(query);
 		
 		// then
 		assertEquals(4, result.size());
@@ -230,7 +230,7 @@ public class HibernateQueriesDemo {
 		String query = "SELECT to.name FROM TelecommunicationObject to WHERE EXISTS (SELECT num FROM PhoneNumber num where num.object = to)";
 		
 		// when
-		List<?> result = persistenceService.getTelecommunicationObjects(query);
+		List<?> result = persistenceService.getResult(query);
 		
 		// then
 		assertEquals(3, result.size());
@@ -248,7 +248,7 @@ public class HibernateQueriesDemo {
 		String query = "SELECT to FROM TelecommunicationObject to WHERE to.name LIKE '%some%'";
 		
 		// when
-		List<?> result = persistenceService.getTelecommunicationObjects(query);
+		List<?> result = persistenceService.getResult(query);
 		
 		// then
 		assertEquals(1, result.size());
@@ -266,7 +266,7 @@ public class HibernateQueriesDemo {
 		String query = "SELECT to.name, to.id, COUNT(num) FROM TelecommunicationObject to, PhoneNumber num WHERE num.object = to GROUP BY to.name, to.id ORDER BY to.id";
 		
 		// when
-		List<?> result = persistenceService.getTelecommunicationObjects(query);
+		List<?> result = persistenceService.getResult(query);
 		
 		// then
 		assertEquals(3, result.size());
@@ -287,7 +287,7 @@ public class HibernateQueriesDemo {
 		String query = "SELECT to.name, to.id, COUNT(num) FROM TelecommunicationObject to LEFT OUTER JOIN to.numbers num GROUP BY to.name, to.id ORDER BY to.id";
 		
 		// when
-		List<?> result = persistenceService.getTelecommunicationObjects(query);
+		List<?> result = persistenceService.getResult(query);
 		
 		// then
 		assertEquals(4, result.size());
@@ -307,7 +307,7 @@ public class HibernateQueriesDemo {
 		String query = "SELECT COUNT(num), to.name FROM TelecommunicationObject to RIGHT OUTER JOIN to.numbers num GROUP BY to.name ORDER BY COUNT(num) DESC";
 		
 		// when
-		List<?> result = persistenceService.getTelecommunicationObjects(query);
+		List<?> result = persistenceService.getResult(query);
 		
 		// then
 		assertEquals(4, result.size());
@@ -326,7 +326,7 @@ public class HibernateQueriesDemo {
 		String query = "SELECT to.name, COUNT(num) FROM TelecommunicationObject to, PhoneNumber num WHERE num.object = to GROUP BY to.name HAVING COUNT(num) = 4";
 		
 		// when
-		List<?> result = persistenceService.getTelecommunicationObjects(query);
+		List<?> result = persistenceService.getResult(query);
 		
 		// then
 		assertEquals(2, result.size());
@@ -345,7 +345,7 @@ public class HibernateQueriesDemo {
 				+ "WHERE prevNumber.id = (SELECT MAX(maxNum.id) from PhoneNumber maxNum WHERE maxNum.id < number.id AND maxNum.object = number.object)";
 		
 		// when
-		List<?> result = persistenceService.getTelecommunicationObjects(query);
+		List<?> result = persistenceService.getResult(query);
 		
 		// then
 		assertEquals(7, result.size());
@@ -368,7 +368,7 @@ public class HibernateQueriesDemo {
 		String query = "FROM TelecommunicationObject to";
 		
 		// when
-		List<?> result = persistenceService.getTelecommunicationObjects(query);
+		List<?> result = persistenceService.getResult(query);
 		
 		// then
 		assertEquals(1, result.size());

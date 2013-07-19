@@ -51,8 +51,11 @@ public class AdvancedQueriesDemo {
 	 */
 	private void insertMeasurements() {
 		
+		// FIXME: load data from file
+
 		Observatory observatory = new Observatory(1, "Breslau");
 		for (int i = 0; i <= 12 * 24; i++) {
+			// FIXME: add invalid measurements
 			observatory.addMeasurement(new Measurement(i + 1, getDate(12 * 24 - i), getRandomValue()));
 		}
 
@@ -115,7 +118,7 @@ public class AdvancedQueriesDemo {
 		insertMeasurements();
 		
 		String query = "SELECT current.date, current.value - previous.value from Measurement current, Measurement previous "
-				+ "WHERE MINUTE(current.date) BETWEEN 0 AND 4 AND "
+				+ "WHERE MINUTE(current.date) BETWEEN 0 AND 4 AND HOUR(current.date) != HOUR(previous.date) AND " // skips redundant measurements
 				+ "previous.id = (SELECT MAX(maxM.id) from Measurement maxM WHERE maxM.id < current.id AND MINUTE(maxM.date) BETWEEN 0 AND 4) "
 				+ "ORDER BY current.id ASC";
 		
@@ -125,6 +128,8 @@ public class AdvancedQueriesDemo {
 		// then
 		assertTrue(result.size() >= 23);
 		assertTrue(result.size() <= 24);
+		
+		// TODO: more assertions
 	}
 
 	private BigDecimal normalize(double value) {

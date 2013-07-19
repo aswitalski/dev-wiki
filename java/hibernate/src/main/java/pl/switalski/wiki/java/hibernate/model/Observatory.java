@@ -7,17 +7,14 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+
 @Entity
 @Table(name = "METEOROLOGICAL_OBSERVATORIES")
-public class Observatory {
-	
-	@Id
-	@Column(name = "id", length = 6)
-	private int id;
+public class Observatory extends AbstractEntity {
 	
 	@Column(name = "name")
 	private String name;
@@ -31,14 +28,6 @@ public class Observatory {
 	public Observatory(int id, String name) {
 		this.id = id;
 		this.name = name;
-	}
-	
-	public int getId() {
-		return id;
-	}
-	
-	public void setId(int id) {
-		this.id = id;
 	}
 	
 	public String getName() {
@@ -63,6 +52,11 @@ public class Observatory {
 		}
 		this.measurements.add(measurement);
 		measurement.setObservatory(this);
+	}
+	
+	@Override
+	public String toString() {
+		return ReflectionToStringBuilder.toStringExclude(this, "measurements");
 	}
 
 }

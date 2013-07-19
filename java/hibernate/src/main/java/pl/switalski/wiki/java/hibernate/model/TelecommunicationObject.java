@@ -7,17 +7,12 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 @Entity
 @Table(name = "TELECOMMUNICATION_OBJECTS")
-public class TelecommunicationObject {
-	
-	@Id
-	@Column(name = "id", length = 6)
-	private int id;
+public class TelecommunicationObject extends AbstractEntity {
 	
 	@Column(name = "name", length = 100)
 	private String name;
@@ -33,14 +28,6 @@ public class TelecommunicationObject {
 		this.name = name;
 	}
 
-	public int getId() {
-		return id;
-	}
-	
-	public void setId(int id) {
-		this.id = id;
-	}
-	
 	public String getName() {
 		return name;
 	}

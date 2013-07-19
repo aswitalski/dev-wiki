@@ -4,18 +4,13 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
 @Table(name = "METEOROLOGICAL_MEASUREMENTS")
-public class Measurement {
-	
-	@Id
-	@Column(name = "id", length = 6, nullable = false)
-	private int id;
+public class Measurement extends AbstractEntity {
 	
 	@Column(name = "ts", nullable = false)
 	private Date date;
@@ -36,14 +31,6 @@ public class Measurement {
 		this.value = value;
 	}
 
-	public int getId() {
-		return id;
-	}
-	
-	public void setId(int id) {
-		this.id = id;
-	}
-	
 	public Date getDate() {
 		return date;
 	}

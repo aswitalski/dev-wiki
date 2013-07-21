@@ -92,7 +92,7 @@ public class AdvancedQueriesDemo {
 		
 		String hourlyDifferencesQuery = "SELECT current.value - previous.value from Measurement current, Measurement previous "
 				+ "WHERE MOD(current.id, 12) = 0 AND previous.id = (SELECT MAX(maxM.id) from Measurement maxM WHERE maxM.id < current.id AND MOD(maxM.id, 12) = 0) "
-				+ "ORDER BY current.id ASC";
+				+ "ORDER BY current.date ASC";
 		
 		// when
 		List<Measurement> measurements = (List<Measurement>) persistenceService.getResult(allMeasurementsQuery);
@@ -105,19 +105,20 @@ public class AdvancedQueriesDemo {
 		assertEquals(-1.8, hourlyDifferences.get(1));
 	}
 
-	@SuppressWarnings("unchecked")
-	@Test
 	/**
 	 * Calculates hourly differences between temperature measurements using first measurements in given hour.
 	 * 
-	 * @throws Exception If any exception occurs
+	 * @throws Exception
+	 *             If any exception occurs
 	 */
+	@SuppressWarnings("unchecked")
+	@Test
 	public void getDifferenceBetweenHourlyMeasurementsUsingMinuteExtraction() throws Exception {
 		
 		// given
 		insertMeasurements();
 
-		String query = "SELECT previous.date, current.value - previous.value from Measurement current, Measurement previous "
+		String query = "SELECT current.date, current.value - previous.value from Measurement current, Measurement previous "
 				+ "WHERE MINUTE(current.date) BETWEEN 0 AND 4 AND HOUR(current.date) != HOUR(previous.date) AND " // skips redundant measurements
 				+ "previous.id = (SELECT MAX(maxM.id) from Measurement maxM WHERE maxM.id < current.id AND MINUTE(maxM.date) BETWEEN 0 AND 4) "
 				+ "ORDER BY current.date ASC";
@@ -130,6 +131,56 @@ public class AdvancedQueriesDemo {
 		assertEquals(-4.0, result.get(0)[1]);
 		assertEquals(-3.8, result.get(1)[1]);
 		assertEquals(-2.0, result.get(2)[1]);
+	}
+
+	/**
+	 * Calculates differences between subsequent temperature measurements and sorts by it.
+	 * 
+	 * @throws Exception
+	 *             If any exception occurs
+	 */
+	@Test
+	public void shouldSortResultsByTemperatureDifference() throws Exception {
+		
+		// given
+		insertMeasurements();
+		
+		String query = "SELECT current.date, current.value - previous.value from Measurement current, Measurement previous "
+				+ "WHERE previous.id = (SELECT MAX(maxM.id) from Measurement maxM WHERE maxM.id < current.id) ORDER BY current.value - previous.value DESC";
+		
+		// when
+		@SuppressWarnings("unchecked")
+		List<Object[]> result = (List<Object[]>) persistenceService.getResult(query);
+		
+		// then
+		assertEquals(40, result.size());
+		assertEquals(0.5, result.get(0)[1]);
+		assertEquals(-1.0, result.get(39)[1]);
+	}
+
+	/**
+	 * Calculates absolute (non-negative) differences between subsequent temperature measurements and sorts by it.
+	 * 
+	 * @throws Exception
+	 *             If any exception occurs
+	 */
+	@Test
+	public void shouldSortResultsByAbsoluteTemperatureDifference() throws Exception {
+		
+		// given
+		insertMeasurements();
+		
+		String query = "SELECT current.date, ABS(current.value - previous.value) from Measurement current, Measurement previous "
+				+ "WHERE previous.id = (SELECT MAX(maxM.id) from Measurement maxM WHERE maxM.id < current.id) ORDER BY ABS(current.value - previous.value) DESC";
+		
+		// when
+		@SuppressWarnings("unchecked")
+		List<Object[]> result = (List<Object[]>) persistenceService.getResult(query);
+		
+		// then
+		assertEquals(40, result.size());
+		assertEquals(1.0, result.get(0)[1]);
+		assertEquals(0.1, result.get(39)[1]);
 	}
 
 }

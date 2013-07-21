@@ -1,14 +1,15 @@
 package pl.switalski.wiki.demo;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
-import java.math.BigDecimal;
-import java.util.Calendar;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,42 +29,40 @@ import pl.switalski.wiki.java.hibernate.model.Observatory;
 @TransactionConfiguration(defaultRollback = true)
 public class AdvancedQueriesDemo {
 	
+	private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	
 	@Autowired
 	private PersistenceService persistenceService;
 	
-	private Date getDate(int periodsBack) {
-		Calendar calendar = Calendar.getInstance();
-		calendar.setTime(new Date());
-		calendar.add(Calendar.MINUTE, 5 * periodsBack);
-		calendar.set(Calendar.SECOND, new Random().nextInt(60));
-		calendar.set(Calendar.MILLISECOND, 0);
-		return calendar.getTime();
-	}
-	
-	private double getRandomValue() {
-		double value = 18 + Math.random() * 5;
-		BigDecimal bd = new BigDecimal(value).setScale(1, BigDecimal.ROUND_DOWN);
-		return bd.doubleValue();
-	}
-
 	/**
 	 * Inserts data re-used in several tests.
+	 * 
+	 * @throws IOException
 	 */
-	private void insertMeasurements() {
+	@SuppressWarnings("unchecked")
+	private void insertMeasurements() throws Exception {
 		
-		// FIXME: load data from file
-
 		Observatory observatory = new Observatory(1, "Breslau");
-		for (int i = 0; i <= 12 * 24; i++) {
-			// FIXME: add invalid measurements
-			observatory.addMeasurement(new Measurement(i + 1, getDate(12 * 24 - i), getRandomValue()));
+		
+		Pattern pattern = Pattern.compile("(\\d{4}\\-\\d{2}\\-\\d{2} \\d{2}:\\d{2}:\\d{2}) \\-\\> (.+)");
+		
+		List<String> lines;
+		lines = IOUtils.readLines(AdvancedQueriesDemo.class.getResourceAsStream("/data/measurements.txt"));
+		int i = 0;
+		for (String line : lines) {
+			Matcher matcher = pattern.matcher(line);
+			if (matcher.matches()) {
+				Date date = formatter.parse(matcher.group(1));
+				double value = Double.parseDouble(matcher.group(2));
+				observatory.addMeasurement(new Measurement(++i, date, value));
+			}
 		}
 
 		persistenceService.save(observatory);
 	}
 	
 	@Test
-	public void getDifferenceBetweenMeasurements() {
+	public void getDifferenceBetweenMeasurements() throws Exception {
 		
 		// given
 		insertMeasurements();
@@ -74,12 +73,17 @@ public class AdvancedQueriesDemo {
 		List<?> result = persistenceService.getResult(query);
 		
 		// then
-		assertEquals(288, result.size());
+		assertEquals(40, result.size());
 	}
 	
 	@Test
 	@SuppressWarnings("unchecked")
-	public void getDifferenceBetweenHourlyMeasurementsUsingModulo() {
+	/**
+	 * Calculates hourly differences between temperature measurements using indexes.
+	 * 
+	 * @throws Exception If any exception occurs
+	 */
+	public void getDifferenceBetweenHourlyMeasurementsUsingModulo() throws Exception {
 		
 		// given
 		insertMeasurements();
@@ -95,46 +99,37 @@ public class AdvancedQueriesDemo {
 		List<?> hourlyDifferences = persistenceService.getResult(hourlyDifferencesQuery);
 		
 		// then
-		assertEquals(289, measurements.size());
-		
-		for (int i = 1; i < measurements.size() / 12; i++) {
-			int current = i * 12 + 11;
-			int previous = i * 12 - 1;
-			BigDecimal difference = normalize(measurements.get(current).getValue()).subtract(normalize(measurements.get(previous).getValue()));
-			System.out.println("Difference between measurement " + current + " and measurement " + previous + " is " + difference);
-			BigDecimal dbDiff = normalize((Double) hourlyDifferences.get(i - 1));
-			System.out.println("-> from DB: " + dbDiff);
-			assertEquals(difference, dbDiff);
-		}
+		assertEquals(41, measurements.size());
+		assertEquals(2, hourlyDifferences.size());
+		assertEquals(-3.9, hourlyDifferences.get(0));
+		assertEquals(-1.8, hourlyDifferences.get(1));
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	/**
-	 * Shows date of current temperature measurement which if the first one after full hour and a temperature difference when compared to the measurement an hour before.
+	 * Calculates hourly differences between temperature measurements using first measurements in given hour.
+	 * 
+	 * @throws Exception If any exception occurs
 	 */
-	public void getDifferenceBetweenHourlyMeasurementsUsingMinuteExtraction() {
+	public void getDifferenceBetweenHourlyMeasurementsUsingMinuteExtraction() throws Exception {
 		
 		// given
 		insertMeasurements();
-		
-		String query = "SELECT current.date, current.value - previous.value from Measurement current, Measurement previous "
+
+		String query = "SELECT previous.date, current.value - previous.value from Measurement current, Measurement previous "
 				+ "WHERE MINUTE(current.date) BETWEEN 0 AND 4 AND HOUR(current.date) != HOUR(previous.date) AND " // skips redundant measurements
 				+ "previous.id = (SELECT MAX(maxM.id) from Measurement maxM WHERE maxM.id < current.id AND MINUTE(maxM.date) BETWEEN 0 AND 4) "
-				+ "ORDER BY current.id ASC";
+				+ "ORDER BY current.date ASC";
 		
 		// when
-		List<?> result = persistenceService.getResult(query);
+		List<Object[]> result = (List<Object[]>) persistenceService.getResult(query);
 		
 		// then
-		assertTrue(result.size() >= 23);
-		assertTrue(result.size() <= 24);
-		
-		// TODO: more assertions
+		assertEquals(3, result.size());
+		assertEquals(-4.0, result.get(0)[1]);
+		assertEquals(-3.8, result.get(1)[1]);
+		assertEquals(-2.0, result.get(2)[1]);
 	}
 
-	private BigDecimal normalize(double value) {
-		long intValue = Math.round(value * 10);
-		BigDecimal bdValue = new BigDecimal(intValue).divide(new BigDecimal(10)).setScale(1);
-		return bdValue;
-	}
 }

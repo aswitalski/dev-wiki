@@ -159,7 +159,7 @@ public class AdvancedQueriesDemo {
 	}
 
 	/**
-	 * Calculates absolute (non-negative) differences between subsequent temperature measurements and sorts by it.
+	 * Calculates temperature jumps and sorts by the absolute value.
 	 * 
 	 * @throws Exception
 	 *             If any exception occurs
@@ -181,6 +181,31 @@ public class AdvancedQueriesDemo {
 		assertEquals(40, result.size());
 		assertEquals(1.0, result.get(0)[1]);
 		assertEquals(0.1, result.get(39)[1]);
+	}
+	
+	/**
+	 * Calculates temperature jumps and sorts by the absolute value.
+	 * 
+	 * @throws Exception
+	 *             If any exception occurs
+	 */
+	@Test
+	public void shouldSelectTheWarmestHour() throws Exception {
+		
+		// given
+		insertMeasurements();
+		
+		String query = "SELECT HOUR(m.date), AVG(m.value) from Measurement m GROUP BY HOUR(m.date) ORDER BY AVG(m.value) DESC";
+		
+		// when
+		@SuppressWarnings("unchecked")
+		List<Object[]> result = (List<Object[]>) persistenceService.getResult(query);
+		
+		// then
+		assertEquals(5, result.size()); // hours from 19 to 21
+		assertEquals(19, result.get(0)[0]); // warmest is hour 19
+		assertEquals(27.0, result.get(0)[1]); // with the average (the sole measurement) of 27 degrees
+		assertEquals(23, result.get(4)[0]); // the coldest is hour 23
 	}
 
 }

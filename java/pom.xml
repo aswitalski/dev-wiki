@@ -34,11 +34,16 @@
 		</developer>
 	</developers>
 
-	<!-- <scm> <url>https://46.51.160.75/repos/scoreboards/tags/scoreboards-1.0.12</url> 
-		<developerConnection>scm:svn:https://46.51.160.75/repos/scoreboards/tags/scoreboards-1.0.12</developerConnection> 
-		<connection>scm:svn:https://46.51.160.75/repos/scoreboards/tags/scoreboards-1.0.12</connection> 
-		</scm> <ciManagement> <system>hudson</system> <url>http://10.1.29.45:8080/hudson</url> 
-		</ciManagement> -->
+	<scm>
+		<url>scm:git:git://github.com/aswitalski/dev-wiki.git</url>
+		<developerConnection>scm:git:git://github.com/aswitalski/dev-wiki.git</developerConnection>
+		<connection>scm:git:git://github.com/aswitalski/dev-wiki.git</connection>
+	</scm>
+	
+	<ciManagement>
+		<system>hudson</system>
+		<url>http://10.1.29.45:8080/hudson</url>
+	</ciManagement>
 
 	<build>
 		<pluginManagement>

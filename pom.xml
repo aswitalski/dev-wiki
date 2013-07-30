@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>pl.switalski.dev.wiki</groupId>
 	<artifactId>dev-wiki-parent</artifactId>
-	<version>0.0.3</version>
+	<version>0.0.4-SNAPSHOT</version>
 	<name>dev-wiki-parent</name>
 	<packaging>pom</packaging>
 

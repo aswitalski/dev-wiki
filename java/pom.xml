@@ -34,9 +34,9 @@
 	</developers>
 
 	<scm>
-		<url>scm:git:git://github.com/aswitalski/dev-wiki.git</url>
-		<developerConnection>scm:git:git://github.com/aswitalski/dev-wiki.git</developerConnection>
-		<connection>scm:git:git://github.com/aswitalski/dev-wiki.git</connection>
+		<url>scm:git:https://github.com/aswitalski/dev-wiki.git</url>
+		<developerConnection>scm:git:https://github.com/aswitalski/dev-wiki.git</developerConnection>
+		<connection>scm:git:https://github.com/aswitalski/dev-wiki.git</connection>
 	</scm>
 	
 	<ciManagement>

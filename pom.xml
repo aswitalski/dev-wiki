@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>pl.switalski.dev.wiki</groupId>
@@ -31,7 +32,7 @@
 		<developerConnection>scm:git:https://github.com/aswitalski/dev-wiki.git</developerConnection>
 		<connection>scm:git:https://github.com/aswitalski/dev-wiki.git</connection>
 	</scm>
-	
+
 	<ciManagement>
 		<system>hudson</system>
 		<url>http://server.vm/hudson/</url>
@@ -59,16 +60,10 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>2.3.2</version>
-					<configuration>
-						<verbose>true</verbose>
-						<fork>true</fork>
-						<compilerVersion>1.7</compilerVersion>
-						<encoding>UTF-8</encoding>
-					</configuration>
 				</plugin>
 			</plugins>
 		</pluginManagement>
-		
+
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -77,6 +72,9 @@
 					<source>1.7</source>
 					<target>1.7</target>
 					<encoding>UTF-8</encoding>
+					<verbose>true</verbose>
+					<fork>true</fork>
+					<compilerVersion>1.7</compilerVersion>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -93,15 +91,42 @@
 					<downloadSources>true</downloadSources>
 					<downloadJavadocs>true</downloadJavadocs>
 					<additionalProjectnatures>
-						<projectnature>edu.umd.cs.findbugs.plugin.eclipse.findbugsNature
-						</projectnature>
+						<projectnature>edu.umd.cs.findbugs.plugin.eclipse.findbugsNature</projectnature>
 					</additionalProjectnatures>
 					<additionalBuildcommands>
-						<buildcommand>edu.umd.cs.findbugs.plugin.eclipse.findbugsBuilder
-						</buildcommand>
+						<buildcommand>edu.umd.cs.findbugs.plugin.eclipse.findbugsBuilder</buildcommand>
 					</additionalBuildcommands>
 					<useProjectReferences>true</useProjectReferences>
 				</configuration>
+			</plugin>
+
+			<plugin>
+				<inherited>true</inherited>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<inherited>true</inherited>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 
 		</plugins>

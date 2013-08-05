@@ -1,7 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>pl.switalski.dev.wiki</groupId>
+		<artifactId>dev-wiki-parent</artifactId>
+		<version>0.0.4-SNAPSHOT</version>
+	</parent>
+	
 	<groupId>pl.switalski.dev.wiki.java</groupId>
 	<artifactId>java-parent</artifactId>
 	<version>0.0.3-SNAPSHOT</version>
@@ -9,13 +17,8 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<service.layer.version>1.3.1</service.layer.version>
-		<com.williamhill.streaming.version>1.0.1</com.williamhill.streaming.version>
 		<org.springframework.version>3.0.6.RELEASE</org.springframework.version>
 		<spring.integration.version>2.1.0.RELEASE</spring.integration.version>
-		<powermock.version>1.4.9</powermock.version>
-		<diffusion.version>4.1.2_04</diffusion.version>
-		<wro4j.version>1.3.7</wro4j.version>
 	</properties>
 
 	<organization>
@@ -38,7 +41,7 @@
 		<developerConnection>scm:git:https://github.com/aswitalski/dev-wiki.git</developerConnection>
 		<connection>scm:git:https://github.com/aswitalski/dev-wiki.git</connection>
 	</scm>
-	
+
 	<ciManagement>
 		<system>hudson</system>
 		<url>http://10.1.29.45:8080/hudson</url>

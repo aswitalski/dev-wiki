@@ -12,6 +12,7 @@
 
 	<artifactId>java-core</artifactId>
 	<name>Java Core</name>
+	<description></description>
 	<packaging>jar</packaging>
 
 	<dependencies>

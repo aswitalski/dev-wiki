@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+	<parent>
+		<groupId>pl.switalski.dev.wiki.javascript</groupId>
+		<artifactId>javascript-parent</artifactId>
+		<version>0.0.4-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>pl.switalski.dev.wiki.javascript</groupId>
+	<artifactId>requirejs</artifactId>
+	<version>0.0.4-SNAPSHOT</version>
+	<packaging>war</packaging>
+
+	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+			</resource>
+			<resource>
+				<directory>src/main/webapp</directory>
+			</resource>
+		</resources>
+
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-eclipse-plugin</artifactId>
+				<configuration>
+					<additionalProjectnatures>
+						<projectnature>org.eclipse.jem.workbench.JavaEMFNature</projectnature>
+						<projectnature>org.eclipse.wst.common.modulecore.ModuleCoreNature</projectnature>
+						<projectnature>org.eclipse.wst.common.project.facet.core.nature</projectnature>
+						<projectnature>org.eclipse.wst.jsdt.core.jsNature</projectnature>
+					</additionalProjectnatures>
+					<additionalBuildcommands>
+						<buildcommand>org.eclipse.wst.jsdt.core.javascriptValidator</buildcommand>
+						<buildcommand>org.eclipse.wst.common.project.facet.core.builder</buildcommand>
+						<buildcommand>org.eclipse.wst.validation.validationbuilder</buildcommand>
+					</additionalBuildcommands>
+					<useProjectReferences>true</useProjectReferences>
+					<addVersionToProjectName>false</addVersionToProjectName>
+					<buildOutputDirectory>src/main/webapp/WEB-INF/classes</buildOutputDirectory>
+					<additionalConfig>
+						<!-- these files are necessary to allow automatic detection of this module as a Dynamic Web Project -->
+						<file>
+							<name>.settings/org.eclipse.wst.common.project.facet.core.xml</name>
+							<content><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<faceted-project>
+  <fixed facet="wst.jsdt.web" />
+  <installed facet="java" version="1.6" />
+  <installed facet="jst.web" version="3.0" />
+  <installed facet="wst.jsdt.web" version="1.0" />
+</faceted-project>]]></content>
+						</file>
+						<file>
+							<name>.settings/org.eclipse.wst.common.component</name>
+							<content><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<project-modules id="moduleCoreId" project-version="1.5.0">
+    <wb-module deploy-name="requirejs">
+        <wb-resource deploy-path="/" source-path="/src/main/webapp" />
+        <property name="java-output-path" value="/src/main/webapp/WEB-INF/classes" />
+        <property name="context-root" value="requirejs" />
+    </wb-module>
+</project-modules>]]></content>
+						</file>
+					</additionalConfig>
+				</configuration>
+			</plugin>
+		</plugins>
+
+	</build>
+
+</project>

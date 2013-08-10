@@ -44,14 +44,14 @@
 		};
 		
 		var _log = function(levelName, message) {
-			var t = new Date();
+			var date = new Date();
 			var zf = function(s, n) {
 		        s = s.toString(10);
-		        n = n||2;
-		        while (s.length < n) s = '0'+s;
+		        n = n || 2;
+		        while (s.length < n) s = '0' + s;
 		        return s;
 		    };
-            time = zf(t.getHours()) + ':' + zf(t.getMinutes()) + ':' + zf(t.getSeconds()) + ' ';
+            time = zf(date.getHours()) + ':' + zf(date.getMinutes()) + ':' + zf(date.getSeconds()) + ' ';
 			console[levelName](time + prefix + message);
 		};
 
